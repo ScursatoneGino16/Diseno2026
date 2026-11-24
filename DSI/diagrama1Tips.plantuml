@@ -1,0 +1,34 @@
+@startuml Primer Diagrama del PDF
+
+autonumber
+
+actor ":Cliente" as 1
+boundary ":PantAdmSR" as 2
+control ":GestorSR" as 3
+entity ":TipoSR" as 4
+entity ":ProductoSW" as 5
+entity ":Estado" as 6
+entity ":SolicitudDeRequerimiento" as 7
+
+3 -> 2: pedirDatosSR()
+1 -> 2: tomarDatosSR()
+2 -> 3: tomarDatosSR()
+3 -> 3: buscarTipoSR()
+3 -> 4: *getNombre()
+3 -> 2: pedirSeleccionTipoSR()
+1 -> 2: tomarSeleccionTipoSR()
+2 -> 3: tomarSeleccionTipoSR()
+3 -> 3: buscarProductoSW()
+3 -> 5: *getNombre()
+3 -> 2: pedirSeleccionProductoSW()
+1 -> 2: tomarSeleccionProductoSW()
+2 -> 3: tomarSeleccionProductoSW()
+3 -> 3: buscarEstadoParaAsignar()
+3 -> 6: *esPteAnalisis()
+3 -> 3: obtenerFechaHoraActual()
+3 -> 3: calcularProxNroSR()
+3 -> 3: buscarUltNroSRParaAsignar()
+3 -> 7: *getNumero()
+3 -> 3: crearSR()
+create entity "nueva:SolicitudDeRequerimiento" as 8
+3 --> 8: new()

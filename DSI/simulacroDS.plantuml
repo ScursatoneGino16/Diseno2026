@@ -1,0 +1,51 @@
+@startuml test_puro
+autonumber
+
+actor ":Organizador" as EB
+boundary ":PantPublicarEvento" as P
+control ":GestorPublicarEvento" as G
+entity "A:Sesion" as S
+entity "L:Usuario" as U
+entity ":Evento" as E
+entity ":CambioDeEstadoEvento" as estB
+entity "A:CambioDeEstadoEvento" as estBActual
+entity ":Estado" as EST
+entity ":TipoEntrada" as TE
+entity ":Categoria" as CAT
+
+EB -> P: opcionPublicarEvento()
+P -> G: buscarEventosListoP()
+G -> S: obtenerUsuarioLogueado()
+S -> U: obtenerNombreUsuario()
+
+G -> E: buscarEventosListosParaPublicar()
+E -> estB: buscarCambioActual()
+estB -> estBActual: esActual()
+estBActual -> EST: esListoParaPublicar()
+G -> P: mostrarEventosListoP()
+
+EB -> P: seleccionarEvento()
+P -> G: tomarSeleccionEvento()
+G -> E: obtenerDetallesEvento()
+E -> TE: obtenerDatosEntrada()
+E -> CAT: obtenerNombreCategoria()
+
+G -> P: mostrarDetallesCompleto()
+G -> P: pedirConfirmacionPublicacion()
+EB -> P: confirmarPublicacion()
+P -> G: tomarConfirmacionPublicacion()
+
+G -> E: publicar()
+E -> E: generarURLPublica()
+
+' Aplicando tu diseño: El Gestor no busca el Estado. 
+' Se lo ordena a Evento, y la nueva instancia de CambioDeEstado resuelve la búsqueda.
+G -> E: actualizarEstado()
+
+create entity "P:CambioDeEstadoEvento" as nEstB
+E -> nEstB: new()
+nEstB -> EST: obtenerEstadoPublicado()
+EST -> nEstB: tomarEstadoPublicado()
+nEstB -> nEstB: finCU()
+
+@enduml

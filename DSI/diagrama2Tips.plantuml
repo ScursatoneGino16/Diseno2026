@@ -1,0 +1,46 @@
+@startuml Segundo Diagrama del PDF Tips
+
+autonumber
+
+actor ":ResponsableDeFestival" as 1
+boundary ":PantAdmFestival" as 2
+control ":GestorFestival" as 3
+entity ":Festival" as 4
+
+1 -> 2: opcionRegFestival()
+2 -> 2: habilitarVentana()
+2 -> 3: nuevoFestival()
+3 -> 2: pedirDatosFestival()
+1 -> 2: tomarAñoEdicion()
+1 -> 2: tomarFechaInicio()
+1 -> 2: tomarNombre()
+2 -> 3: tomarDatosIdentFestival()
+3 -> 3: validarFestival()
+3 -> 4: *existeFestival()
+3 -> 2: pedirDemasDatosFestival()
+1 -> 2: tomarDtoVtaAnticipada()
+1 -> 2: tomar%DevAnulacion()
+2 -> 3: tomarDatosRestantesFestival()
+3 -> 2: pedirDatosDiaFestival()
+
+group Para cada dia del Festival [mientras haya dias de festival]
+    1 -> 2: tomarFechaDiaFestival()
+    1 -> 2: tomarHoraPresentacion()
+    1 -> 2: tomarFechaLimiteAnulacion()
+    1 -> 2: tomarFechaVtoVtaAnticipada()
+end
+
+2 -> 3: tomarDatosDiaFestival
+3 -> 3: validarDuplicacionFechasDiaFestival()
+3 -> 2: pedirConfirmacionRegistroFestival()
+1 -> 2: tomarConfirmacionRegistroFestival()
+2 -> 3: tomarConfRegistroFestival()
+3 -> 3: asignarVigenciaFestival()
+3 -> 3: crearFestival()
+
+create entity ":nuevo:Festival" as 5
+3 --> 5: new()
+5 -> 5: crearDiaFestival()
+create entity ":DiaFestival" as 6
+5 --> 6: new()
+3 -> 3: finCU()

@@ -1,0 +1,127 @@
+@startuml Diagrama de Objetos
+
+class PantPagoCuotaPrestamo 
+{
+    numeroPrestamo
+    saldoPendiente
+    cantidadCuotas
+    numeroCuota
+    montoBase
+    fechaVencimiento    
+    opPagoCuotaPrestamo()
+    habilitarVentana()
+    mostrarPrestamosActivos()
+    pedirSeleccionPrestamo()
+    tomarSeleccionPrestamo()
+    mostrarCuotas()
+    pedirSeleccionCuota()
+    tomarSeleccionCuota()
+    mostrarMontoCuota()
+    pedirConfirmacionPago()
+    tomarConfirmacionPago()
+    mostrarExitoCU()
+}
+
+class ControladorPagoCuotaPrestamo 
+{
+    numeroPrestamo
+    saldoPendiente
+    cantidadCuotas
+    numeroCuota
+    montoBase
+    fechaVencimiento
+    fechaHoraActual
+    opPagoCuotaPrestamo()
+    obtenerUsuarioLogueado()
+    buscarPrestamosActivos()
+    tomarSeleccionPrestamo()
+    tomarSeleccionCuota()
+    tomarConfirmacionPago()
+    obtenerFechaHoraActual()
+    finCU()
+}
+
+class Prestamo 
+{
+    numeroPrestamo
+    saldoPendiente
+    cantidadCuotas
+    sosActivo()
+    actualizarSaldoPendiente()
+    validarEstadoPrestamo()
+    actualizarEstadoFinalizado()
+}
+
+class Cuota 
+{
+    numeroCuota
+    montoBase
+    fechaVencimiento
+    obtenerNumeroCuota()
+    obtenerMontoBase()
+    obtenerFechaVencimiento()
+    obtenerEstadoCuota()
+    actualizarEstadoCuota()
+}
+
+class CambioEstadoPrestamo 
+{
+    fechaHoraInicio
+    fechaHoraFin
+    sosActual()
+    sosActivo()
+    registrarFechaHoraFin()
+}
+
+class CambioEstadoCuota 
+{
+    fechaHoraInicio
+    fechaHoraFin
+    sosActual()
+    obtenerEstado()
+    registrarFechaHoraFin()
+    new()
+}
+
+class EstadoPrestamo 
+{
+    nombre
+    descripcion
+    esFinalizado()
+    sosActivo()
+    esFinalizado()
+}
+
+class EstadoCuota 
+{
+    nombre
+    descripcion
+    obtenerNombreEstado()
+    esPagada()
+}
+
+class Sesion 
+{
+    fechaHoraInicio
+    obtenerUsuarioLogueado()
+}
+
+class Usuario 
+{
+    nombreUsuario
+    obtenerNombreUsuario()
+}
+
+PantPagoCuotaPrestamo <..> ControladorPagoCuotaPrestamo
+ControladorPagoCuotaPrestamo ..> Sesion
+Sesion --> "1 " Usuario: usuario
+ControladorPagoCuotaPrestamo ..> Prestamo
+
+Prestamo --> "1..*" Cuota: cuota
+Prestamo --> "1..*" CambioEstadoPrestamo: cambioEstado
+Cuota --> "1..*" CambioEstadoCuota: cambioEstado
+
+CambioEstadoPrestamo --> "1" EstadoPrestamo : estado
+CambioEstadoCuota  --> "1" EstadoCuota : estado
+
+@endum

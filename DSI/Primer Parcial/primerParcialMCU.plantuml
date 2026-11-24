@@ -1,0 +1,104 @@
+@startuml Diagrama de Secuencias
+autonumber
+actor ":Cliente" as C
+boundary ":PantPagoCuotaPrestamo" as PPCP
+control ":GestorPagoCuotaPrestamo" as GPCP
+entity "A:Sesion" as S
+entity "L:Usuario" as U
+entity ":Prestamo" as P
+entity ":CambioEstadoPrestamo" as cEstP
+entity "A:CambioEstadoPrestamo" as estAP
+entity ":EstadoPrestamo" as estP
+entity "S:Prestamo" as SP
+entity ":Cuota" as Cu
+entity "S:Cuota" as SCu
+entity ":CambioEstadoCuota" as cEstCu
+entity "A:CambioEstadoCuota" as estAC
+entity ":EstadoCuota" as estCu
+participant "CU:Registrar pago de cuota" as CU
+
+C -> PPCP: opPagoCuotaPrestamo()
+PPCP -> PPCP: habilitarVentana()
+PPCP -> GPCP: opPagoCuotaPrestamo()
+GPCP -> GPCP: buscarClienteLogueado()
+GPCP -> S: obtenerClienteLogueado()
+S -> U: obtenerClienteLogueado()
+GPCP -> GPCP: buscarPrestamosActivos()
+GPCP -> U: obtenerPrestamosActivos()
+
+group Buscar Prestamos Activos [mientras haya prestamos activos]
+    U -> P: obtenerPrestamosActivos()
+    P -> cEstP: sosActual()
+    P -> estAP: sosActivo()
+    estAP -> estP: sosActivo()
+    U -> P: obtenerNumeroPrestamo()
+    U -> P: obtenerSaldoPendiente()
+    U -> P: obtenerCantidadCuotas()
+end
+
+GPCP -> PPCP: mostrarPrestamosActivos()
+GPCP -> PPCP: pedirSeleccionPrestamo()
+C -> PPCP: tomarSeleccionPrestamo()
+PPCP -> GPCP: tomarSeleccionPrestamo()
+GPCP -> GPCP: buscarCuotasPrestamo()
+GPCP -> SP: obtenerCuotasPrestamo()
+
+group Buscar Cuotas Prestamo [mientras haya cuotas]
+    SP -> Cu: obtenerNumeroCuota()
+    SP -> Cu: obtenerMontoBase()
+    SP -> Cu: obtenerFechaVencimiento()
+end
+
+GPCP -> PPCP: mostrarCuotas()
+GPCP -> PPCP: pedirSeleccionCuota()
+C -> PPCP: tomarSeleccionCuota()
+PPCP -> GPCP: tomarSeleccionCuota()
+GPCP -> GPCP: buscarEstadoCuota()
+GPCP -> SCu: obtenerEstadoCuota()
+SCu -> cEstCu: sosActual()
+SCu -> estAC: esProgramada()
+estAC -> estCu: esProgramada()
+GPCP -> PPCP: mostrarMontoCuota()
+GPCP -> PPCP: pedirConfirmacionPago()
+C -> PPCP: tomarConfirmacionPago()
+PPCP -> GPCP: tomarConfirmacionPago()
+GPCP -> GPCP: llamarCUPagoCuota()
+GPCP --> CU: <<include>>
+GPCP -> PPCP: mostrarExitoCU()
+GPCP -> GPCP: buscarEstadoAsignarCuota()
+GPCP -> estCu: esPagada()*
+GPCP -> GPCP: obtenerFechaHoraActual()
+GPCP -> GPCP: actualizarEstadoCuota()
+GPCP -> SCu: actualizarEstadoCuota()
+SCu -> SCu: obtenerEstadoActual()
+SCu -> estAC: registrarFechaHoraFin()
+SCu -> SCu: crearCambioEstado()
+
+create entity "P:CambioEstadoCuota" as nuevoCEstCu
+SCu --> nuevoCEstCu: new()
+
+GPCP -> GPCP: actualizarSaldoPendiente()
+GPCP -> SP: actualizarSaldoPendiente()
+GPCP -> GPCP: validarPrestamo()
+GPCP -> SP: validarPrestamo()
+
+group Validar Cuotas Pendientes [mientras haya cuotas del prestamo]
+    SP -> Cu: obtenerCuotasPendientes()
+    Cu -> cEstCu: sosActual()
+    Cu -> estAC: esPagada()
+    estAC -> estCu: esPagada() 
+end
+
+GPCP -> GPCP: buscarEstadoAsignarPrestamo()
+GPCP -> estP: esFinalizado()*
+GPCP -> GPCP: obtenerFechaHoraActual()
+GPCP -> GPCP: actualizarEstadoPrestamo()
+GPCP -> SP: actualizarEstadoPrestamo()
+SP -> SP: obtenerEstadoActual()
+SP -> estAP: registrarFechaHoraFin()
+SP -> SP: crearCambioEstado()
+
+create entity "F:CambioEstadoPrestamo" as nuevoCEstP
+SP --> nuevoCEstP: new()
+
+GPCP -> GPCP: finCU()

@@ -1,0 +1,21 @@
+@startuml Maquina de Estados - Evento
+
+[*] --> EnEdicion : crearEvento()
+
+EnEdicion --> ListoParaPublicar : [formularioGenerado]\nverificarDatosMinimos()
+
+ListoParaPublicar --> Publicado : publicarEvento()\ngenerarURL()
+
+
+Publicado --> EnCurso : [fechaInicioAlcanzada]\niniciarEvento()
+EnCurso --> Finalizado : [fechaFinAlcanzada]\nfinalizarEvento()
+
+' Transiciones de Cancelación
+EnEdicion --> Cancelado : cancelarEvento()
+ListoParaPublicar --> Cancelado : cancelarEvento()
+Publicado ---> Cancelado : [fechaInicioNoAlcanzada]\ncancelarEvento()
+
+Cancelado --> [*]
+Finalizado --> [*]
+
+@enduml

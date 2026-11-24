@@ -1,0 +1,35 @@
+@startuml "Diagrama de Componentes"
+left to right direction
+component WebUI as web 
+component WebUIGateway as webGateway
+component ServicioCampos as campos
+database "BD Campos" as dbCampos
+component ServicioCultivos as cultivos
+database "BD Cultivos" as dbCultivos
+component ServicioTratamientos as tratamientos
+database "BD Tratamientos" as dbTratamientos
+component ServicioUsuarios as usuarios
+database "BD Usuarios" as dbUsuarios
+component ServicioLaboreo as laboreo
+database "BD Laboreo" as dbLaboreo
+component ServicioProyectoDeLaboreo as proyectoLaboreo
+database "BD ProyectoDeLaboreo" as dbProyectoDeLaboreo
+component ServicioDatosCultivo as datosCultivo
+database "BD DatosCultivo" as dbDatosCultivo
+
+web --> webGateway
+webGateway --> campos
+campos --> dbCampos
+webGateway --> cultivos
+cultivos --> dbCultivos
+webGateway --> tratamientos
+tratamientos --> dbTratamientos
+webGateway --> usuarios
+usuarios --> dbUsuarios
+webGateway --> laboreo
+laboreo --> dbLaboreo
+webGateway --> proyectoLaboreo
+proyectoLaboreo --> dbProyectoDeLaboreo
+webGateway --> datosCultivo
+datosCultivo --> dbDatosCultivo
+@enduml

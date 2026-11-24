@@ -1,0 +1,23 @@
+@startuml Casos de Uso Diagnostico
+left to right direction
+
+actor "Cliente"
+actor "Administrador de Playa" as Administrador
+actor "Personal de Control de Ingreso" as ControlIngreso
+
+(2. Registrar Cliente) as UC1
+(3. Registrar Vehiculo) as UC2
+(4. Registrar Recarga de Saldo) as UC3
+(7. Emitir Comprobante de Recarga) as UC4
+(5. Gestionar Vehiculo) as UC5
+(1. Registrar Ingreso) as UC6
+(6. Emitir Comprobante de Ingreso) as UC7
+
+Administrador --> UC1
+Administrador --> UC2
+Administrador --> UC3
+Cliente --> UC5
+ControlIngreso --> UC6
+
+UC3 ..> "<<inc>>" UC4
+UC6 ..> "<<inc>>" UC7

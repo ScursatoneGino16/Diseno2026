@@ -1,0 +1,27 @@
+@startuml meOrdenTraslado
+
+[*] --> Creada: new()
+Creada --> Creada: validarHorarioOrden() \n[si no pasaron 24 horas]
+Creada --> Rechazada: rechazar() 
+Creada --> Rechazada: validarHorarioOrden() \n[si pasaron 24 horas sin decision]
+Rechazada --> [*]
+
+Creada --> Aprobada: aprobar()\n[aprobadada por el JefeEquipo]
+Aprobada --> EnPreparacion: iniciarPreparacion()
+EnPreparacion --> ListoParaEnvio: marcarListo()
+ListoParaEnvio --> EnTraslado: iniciarTraslado()
+EnTraslado --> EnDestino: marcarEnDestino()
+EnDestino --> Incompleta: marcarIncompleta()\n[contenedor Incompleto]
+Incompleta --> [*]
+
+EnDestino --> Exitosa: marcarExitosa()\n [contiene todo lo solicitado]
+Exitosa --> [*]
+
+[*] ----> Aprobada: new()\n [creadas por el JefeEquipo] 
+
+' Cancelaciones
+Aprobada --> Cancelada: cancelar()
+EnPreparacion --> Cancelada: cancelar()
+ListoParaEnvio --> Cancelada: cancelar()   
+Creada ---> Cancelada: cancelar()
+Cancelada --> [*]

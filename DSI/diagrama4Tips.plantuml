@@ -1,0 +1,20 @@
+@startuml Cuarto Diagrama del PDF
+
+autonumber
+
+control GestorPedido as 1
+entity ":Estado" as 2
+entity ":Pedido" as 3
+entity ":DetallePedido" as 4
+
+1 -> 1: buscarEstadoCancelado()
+1 -> 2: *esCancelado()
+1 -> 1: cancelarPedido
+1 -> 3: cancelar()
+3 -> 3: setEstado()
+3 -> 3: cancelarDetallePedido()
+
+group loop Recorrer DetallePedido [mientras haya detalles de pedido]
+    3 -> 4: cancelar()
+    4 -> 4: setEstado()
+end

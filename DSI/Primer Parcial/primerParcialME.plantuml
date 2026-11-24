@@ -1,0 +1,9 @@
+@startuml Maquina de estados para Cuota
+[*] --> Programada
+
+Programada --> Vencida : CU. Registrar vencimiento de cuota \nregistrarVencimiento()
+Programada --> Pagada : 3. Registrar pago de cuota \nactualizarEstadoCuota()
+Vencida --> Pagada : 3. Registrar pago de cuota \nactualizarEstadoCuota()
+
+Pagada --> [*]
+@endum

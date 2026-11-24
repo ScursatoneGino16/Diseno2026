@@ -1,0 +1,89 @@
+@startuml MODP Diagnostico
+
+class Vehiculo
+{
+    marca
+    modelo
+    dominio
+    tipoVehiculo:TipoVehiculo
+    crear()
+    mostrar()
+    conocerTipoVehiculo()
+}
+
+class TipoVehiculo
+{
+    nombre
+    descripcion
+    crear()
+    mostrar()
+}
+
+class Cliente
+{
+    nombre
+    apellido
+    nroDNI
+    cuenta:CuentaCorriente
+    crear()
+    mostrar()
+    conocerCuentaCorriente()
+}
+
+class CuentaCorriente
+{
+    saldo
+    abono
+    vehiculos:Vehiculo
+    recarga:Recarga
+    crear()
+    mostrar()
+    conocerVehiculo()
+    conocerRecarga()
+    calcularSaldoActual()
+    registrarNuevoVehiculo()
+    modificarVehiculo()
+}
+
+class Recarga
+{
+    nroOperacion
+    fechaRecarga
+    horaRecarga
+    montoRecarga
+    crear()
+    mostrar()
+    emitirComprobanteRecarga()
+}
+
+class Ingreso
+{
+    fechaIngreso
+    horaIngreso
+    tarifaBase
+    portonIngreso
+    cliente:Cliente
+    vehiculo:Vehiculo
+    montoTotal
+    crear()
+    mostrar()
+    conocerCliente()
+    conocerVehiculo()
+    verificarIngresoDiario()
+    verificarAbono()
+    verificarSaldoNegativo()
+    calcularMontoTotal()
+    emitirComprobanteIngreso()
+}
+
+note "El atributo abono es un booleano" as N1
+note "En el calculo del monto total se tiene en cuenta el tipo de vehiculo y si el cliente tiene abono" as N2
+
+Cliente --> "1  " CuentaCorriente
+CuentaCorriente --> "1..*" Vehiculo
+CuentaCorriente --> "0..* " Recarga
+N1 ..> CuentaCorriente
+Vehiculo --> "1 " TipoVehiculo
+Ingreso --> "0..1 " Cliente
+Ingreso --> "1  " Vehiculo
+N2 ..> Ingreso
