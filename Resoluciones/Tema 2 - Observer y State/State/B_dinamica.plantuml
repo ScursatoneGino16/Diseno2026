@@ -1,0 +1,80 @@
+@startuml State - Vista Dinámica
+' Tema 2 - Punto 2: Patrón State
+' Escenario: pago de la última cuota (programada) de un préstamo AL DÍA.
+' Transición: AlDia --3. Registrar pago de cuota [última cuota = SI] / finalizar()--> Finalizado
+autonumber
+title Patrón State - Vista Dinámica\nEscenario: pago de la última cuota de un préstamo al día
+
+actor ":Cliente" as C
+boundary ":PantallaRegistrarPagoCuota" as P
+control ":GestorRegistrarPagoCuota" as G
+entity "seleccionado:Prestamo" as PR
+participant "actual:AlDia" as AD
+entity "seleccionada:Cuota" as CU
+entity ":Cuota" as CS
+entity ":CambioEstado" as CE
+entity "actual:CambioEstado" as CEA
+participant "CU: Registrar pago" as RP
+
+C -> P: tomarConfirmacion()
+P -> G: tomarConfirmacion()
+
+G -> G: registrarPagoCuota()
+G --> RP: <<include>>
+
+note over G
+  buscarEstadoPagada() (loop Recorrer Estados
+  de la Cuota) queda igual que en el análisis
+end note
+G -> G: buscarEstadoPagada()
+G -> G: getFechaActual(): DateTime
+
+G -> G: pagarCuota()
+G -> PR: pagarCuota(cuota: Cuota, estadoPagada: EstadoCuota, fechaHoraActual: DateTime)
+PR -> CU: pagar(estadoPagada: EstadoCuota)
+CU -> CU: setEstado(estado: EstadoCuota)
+PR -> PR: calcularSaldoPendiente(): Double
+PR -> PR: setSaldoPendiente(saldo: Double)
+
+PR -> AD: pagarCuota(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[], cuotas: Cuota[])
+
+AD -> AD: validarCuotasRestantes(cuotas: Cuota[]): Boolean
+group Recorrer cuotas del préstamo [mientras existan cuotas]
+    AD -> CS: estasPagada(): Boolean
+end
+
+note right of AD
+  [última cuota = SI] / finalizar()
+end note
+
+AD -> AD: finalizarCambioEstadoActual(cambiosEstado: CambioEstado[], fechaHoraActual: DateTime)
+group Buscar cambio de estado actual [mientras existan cambios de estado]
+    AD -> CE: *sosActual(): Boolean
+end
+AD -> CEA: setFechaHoraFin(fechaHoraFin: DateTime)
+
+AD -> AD: crearEstado(): Estado
+create participant "nuevo:Finalizado" as F
+AD --> F: new()
+
+AD -> AD: crearCambioEstado(fechaHoraActual: DateTime, estado: Estado): CambioEstado
+create entity "nuevo:CambioEstado" as NCE
+AD --> NCE: new(fechaHoraInicio: DateTime, estado: Estado)
+
+AD -> PR: setEstadoActual(estado: Estado)
+AD -> PR: agregarCambioEstado(cambioEstado: CambioEstado)
+
+G -> PR: estaFinalizado(): Boolean
+PR -> F: esFinalizado(): Boolean
+
+note over G
+  Continúa con la notificación al cliente
+  (rediseñada con Observer) y finCU().
+  Se eliminan del gestor determinarEstadoPrestamo(),
+  finalizarPrestamo(), buscarEstadoFinalizado() y el
+  loop Recorrer Estados (sosAmbitoPrestamo / sosFinalizado).
+end note
+
+G -> G: finCU()
+
+@enduml

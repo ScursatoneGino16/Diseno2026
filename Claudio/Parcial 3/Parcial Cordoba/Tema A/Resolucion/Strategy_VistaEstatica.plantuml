@@ -1,0 +1,59 @@
+@startuml Strategy - Vista Estática
+skinparam classAttributeIconSize 0
+
+class GestorRegistrarPagoCuota <<control>> {
+    - prestamoSeleccionado: Prestamo
+    - definicionMoraPrestamo: DefinicionMora
+    - estrategiaCalculoMora: IEstrategiaCalculoMora
+    - fechaActual: DateTime
+    - diasRetraso: int
+    - montoCuota: double
+    - montoRecargo: double
+    - montoAAbonar: double
+    + calcularMontoAAbonar(): void
+    + getFechaActual(): DateTime
+    + crearEstrategia(): IEstrategiaCalculoMora
+    + calcularDiasAtraso(): void
+    + calcularRecargoAplicable(): void
+}
+
+class Prestamo <<entity>> {
+    + obtenerDefinicionMora(): DefinicionMora
+}
+
+class TipoPrestamo <<entity>> {
+    + obtenerDefinicionMora(): DefinicionMora
+}
+
+class DefinicionMora <<entity>> {
+    - porcentajeRecargo: double
+    - montoFijoRecargo: double
+    + esPorcentual(): boolean
+    + getPorcentajeRecargo(): double
+    + getMontoFijoRecargo(): double
+}
+
+interface IEstrategiaCalculoMora <<interface>> {
+    + calcularRecargoAplicable(montoBase: double, diasAtraso: int, definicionMora: DefinicionMora): double
+}
+
+class EstrategiaCalculoPorcentual <<estrategia>> {
+    + new(): EstrategiaCalculoPorcentual
+    + calcularRecargoAplicable(montoBase: double, diasAtraso: int, definicionMora: DefinicionMora): double
+    + calcularRecargoPorcentual(montoBase: double, porcentajeRecargo: double, diasAtraso: int): double
+}
+
+class EstrategiaCalculoFijo <<estrategia>> {
+    + new(): EstrategiaCalculoFijo
+    + calcularRecargoAplicable(montoBase: double, diasAtraso: int, definicionMora: DefinicionMora): double
+}
+
+GestorRegistrarPagoCuota ..> IEstrategiaCalculoMora
+GestorRegistrarPagoCuota ..> Prestamo
+GestorRegistrarPagoCuota ..> DefinicionMora
+Prestamo --> "1" TipoPrestamo : tipoPrestamo
+TipoPrestamo --> "1" DefinicionMora : definicionMora
+EstrategiaCalculoPorcentual ..|> IEstrategiaCalculoMora
+EstrategiaCalculoFijo ..|> IEstrategiaCalculoMora
+EstrategiaCalculoPorcentual ..> DefinicionMora
+@enduml

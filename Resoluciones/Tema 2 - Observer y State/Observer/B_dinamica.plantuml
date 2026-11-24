@@ -1,0 +1,63 @@
+@startuml Observer - Vista Dinámica
+' Tema 2 - Punto 1: Patrón Observer
+' Escenario: pago de cuota de un préstamo al día, última cuota (el préstamo se finaliza)
+' y el cliente tiene activas las notificaciones vía mail y SMS.
+autonumber
+title Patrón Observer - Vista Dinámica\nEscenario: notificación vía mail y SMS
+
+actor ":Cliente" as C
+boundary ":PantallaRegistrarPagoCuota" as P
+control ":GestorRegistrarPagoCuota" as G
+entity "logueado:Cliente" as CL
+entity "seleccionado:Prestamo" as PR
+entity "seleccionada:Cuota" as CU
+actor ":ServidorCorreo" as SC
+actor ":ServidorSMS" as SS
+
+C -> P: tomarConfirmacion()
+P -> G: tomarConfirmacion()
+
+note over G
+  registrarPagoCuota(), <<include>> Registrar pago
+  y la actualización de estados (rediseñada con State)
+  se mantienen. El gestor obtiene si el préstamo quedó
+  finalizado con estaFinalizado().
+end note
+
+G -> PR: estaFinalizado(): Boolean
+
+G -> G: notificarPagoCuota()
+G -> G: buscarFormaNotificacion()
+G -> CL: getFormaNotificacion(): String[]
+G -> CL: getNombre(): String
+G -> CL: getCorreo(): String
+G -> CL: getTelefono(): String
+G -> PR: getNumero(): int
+G -> CU: getNumero(): int
+
+G -> G: crearObservadores(formaNotificacion: String[]): IObservadorPagoCuota[]
+create boundary ":InterfazCorreo" as IC
+G --> IC: new()
+create boundary ":InterfazSMS" as IS
+G --> IS: new()
+
+group Suscribir observadores [mientras existan observadores creados]
+    G -> G: suscribir(observador: IObservadorPagoCuota)
+end
+
+G -> G: notificar()
+group Notificar observadores [mientras existan observadores suscriptos]
+    G -> IC: actualizar(nombreCliente, email, telefono, nroPrestamo, nroCuota, montoPagado, fechaHoraPago, prestamoFinalizado)
+    IC -> IC: armarMensaje(nombreCliente, nroPrestamo, nroCuota, montoPagado, fechaHoraPago, prestamoFinalizado): String
+    IC -> IC: enviarCorreo(email: String, asunto: String, cuerpoCorreo: String)
+    IC -> SC: enviarEmail()
+
+    G -> IS: actualizar(nombreCliente, email, telefono, nroPrestamo, nroCuota, montoPagado, fechaHoraPago, prestamoFinalizado)
+    IS -> IS: armarMensaje(nombreCliente, nroPrestamo, nroCuota, montoPagado, fechaHoraPago, prestamoFinalizado): String
+    IS -> IS: enviarSMS(telefono: String, textoSMS: String)
+    IS -> SS: enviarMensajeSMS()
+end
+
+G -> G: finCU()
+
+@enduml

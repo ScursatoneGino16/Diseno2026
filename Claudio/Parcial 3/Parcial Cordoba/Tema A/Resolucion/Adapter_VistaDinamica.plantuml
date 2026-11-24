@@ -1,0 +1,20 @@
+@startuml Adapter - Vista Dinámica
+control ":GestorRegistrarPagoCuota" as G
+entity "seleccionado:Prestamo" as P
+entity "logueado:Cliente" as C
+G -> G: validarPrestamoEnteExterno()
+G -> P: obtenerEnteCobroExterno(): String
+G -> G: obtenerCodigoPagoEnteExterno()
+G -> C: getDNI(): int
+G -> P: getFechaHoraAcreditacion(): DateTime
+G -> P: getMontoOtorgado(): double
+G -> G: crearAdaptador(): IAdaptadorCentralDeudores
+create participant ":AdaptadorSENASA" as A <<adapter>>
+G --> A: new(): AdaptadorSENASA
+participant ":ServicioSENASA" as S
+G -> A: obtenerCodigoPago(dni: int, fechaHoraAcreditacion: DateTime,\nmontoOtorgado: double): String
+A -> A: solicitarHistorialPrestamos()
+A -> S: consultarDeuda(dni: int, fechaHora: DateTime): String
+A -> A: adaptarHistorialPrestamos()
+A -> A: filtrarPrestamoVigente(): String
+@enduml

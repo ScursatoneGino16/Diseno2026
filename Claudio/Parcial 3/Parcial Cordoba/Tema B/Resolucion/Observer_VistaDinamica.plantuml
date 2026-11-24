@@ -1,0 +1,30 @@
+@startuml Observer - Vista Dinámica
+control ":GestorRegistrarPagoCuota" as G
+entity "logueado:Cliente" as C
+actor ":Servidor SMS" as ServidorSMS
+actor ":Servidor Correo" as ServidorCorreo
+G -> G: notificarPagoCuota()
+G -> G: buscarFormaNotificacion()
+G -> C: getFormaNotificacion(): String
+G -> G: buscarDatosContacto()
+G -> C: getCorreo(): String
+G -> C: getTelefono(): String
+G -> G: crearObservadores()
+create boundary ":InterfazCorreo" as IC
+G --> IC: new(): InterfazCorreo
+create boundary ":InterfazSMS" as IS
+G --> IS: new(): InterfazSMS
+
+group Suscribir observadores [mientras existan observadores creados]
+    G -> G: suscribir(observador: IObservadorPagoCuota)
+end
+
+G -> G: notificar()
+G -> IC: actualizar(correo: String, telefono: String,\nmontoPagado: double, prestamoFinalizado: boolean)
+IC -> IC: enviarCorreo(correo: String, telefono: String,\nmontoPagado: double, prestamoFinalizado: boolean)
+IC -> ServidorCorreo: enviarEmail()
+G -> IS: actualizar(correo: String, telefono: String,\nmontoPagado: double, prestamoFinalizado: boolean)
+IS -> IS: enviarMensaje(correo: String, telefono: String,\nmontoPagado: double, prestamoFinalizado: boolean)
+IS -> ServidorSMS: enviarSMS()
+G -> G: finCU()
+@enduml

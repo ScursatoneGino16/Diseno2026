@@ -1,0 +1,18 @@
+@startuml Strategy - Vista Dinámica
+control ":GestorRegistrarPagoCuota" as G
+entity "seleccionado:Prestamo" as P
+entity "delPrestamo:TipoPrestamo" as TP
+entity "df:DefinicionMora" as DM
+G -> G: calcularMontoAAbonar()
+G -> G: getFechaActual(): DateTime
+G -> P: obtenerDefinicionMora(): DefinicionMora
+P -> TP: obtenerDefinicionMora(): DefinicionMora
+G -> G: crearEstrategia(): IEstrategiaCalculoMora
+G -> DM: esPorcentual(): boolean
+create participant ":EstrategiaCalculoPorcentual" as E <<estrategia>>
+G --> E: new(): EstrategiaCalculoPorcentual
+G -> G: calcularDiasAtraso()
+G -> G: calcularRecargoAplicable()
+G -> E: calcularRecargoAplicable(montoBase: double, diasAtraso: int,\ndefinicionMora: DefinicionMora): double
+E -> DM: getPorcentajeRecargo(): double
+E -> E: calcularRecargoPorcentual(montoBase: double, porcentajeRecargo: double,\ndiasAtraso: int): double

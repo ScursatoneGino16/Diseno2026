@@ -1,0 +1,79 @@
+@startuml VistaDespliegue
+node "Cliente Mobile Android" as Mobile {
+  component "MobileUI" <<subsistema>> as MUI {
+    component "ProductoPresMobile" 
+    component "CompraVentaPresMobile" 
+    component "ParticipantePresMobile" 
+    component "UsuarioPresMobile"
+    component "PoliticaBeneficiosPresMobile"
+  }
+
+  component "BiometriaAndroid" 
+}
+
+node "Servidor Gateway" as Host {
+  component "WebServer"
+  component "MobileAPIGateway"
+  component "PublicAPIGateway"
+}
+
+node "Servidor CompraVenta" as SCV {
+  component "ServicioCompraVenta" <<microservicio>>
+  database "BD CompraVenta"
+}
+
+node "Servidor AutenticacionUsuarios" as SAU {
+  component "ServicioAutenticacionUsuarios" <<microservicio>>
+  database "BD Usuarios"
+}
+
+node "Servidor Productos" as SP {
+  component "ServicioProductos" <<microservicio>>
+  database "BD Productos"
+}
+
+node "Servidor Participantes" as SPart {
+  component "ServicioParticipantes" <<microservicio>>
+  database "BD Participantes"
+}
+
+node "Servidor PoliticaBeneficios" as SPol {
+  component "ServicioPoliticaBeneficios" <<microservicio>>
+  database "BD PoliticaBeneficios"
+}
+
+node "Servidor Integracion Notificacion Push" as SNot {
+  component "ServicioNotificacionPush" <<microservicio>>
+  component "WebServer" as w1
+}
+
+node "Servidor Integracion Login Biometrico" as SLB {
+  component "ServicioLoginBiometrico" <<microservicio>>
+  component "WebServer" as w2
+}
+
+node "Servidor Integracion Google Maps" as SIGM {
+  component "ServicioVisualizacionEnMapa" <<microservicio>>
+  component "WebServer" as w3
+}
+
+node "Servidor FCM" <<externo>> as SFCM {
+  component "FCM" 
+}
+
+node "Servidor Google Maps" <<externo>> as SGM {
+  component "GoogleMapsAPI" 
+}
+
+Host - Mobile
+Host - SCV
+Host - SAU
+Host - SP
+Host - SPart
+Host - SPol
+Host - SNot
+Host - SLB
+Host - SFCM
+Host - SIGM
+Host - SGM
+@enduml

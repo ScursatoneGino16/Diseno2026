@@ -1,0 +1,60 @@
+@startuml Observer - Vista Estática
+skinparam classAttributeIconSize 0
+
+interface ISujeto <<interface>> {
+    - observadores: IObservadorPagoCuota[]
+    + suscribir(observador: IObservadorPagoCuota): void
+    + desuscribir(observador: IObservadorPagoCuota): void
+    + notificar(): void
+}
+
+interface IObservadorPagoCuota <<interface>> {
+    + actualizar(correo: String, telefono: String, montoPagado: double, prestamoFinalizado: boolean): void
+}
+
+class GestorRegistrarPagoCuota <<control>> {
+    - clienteLogueado: Cliente
+    - montoPagado: double
+    - prestamoFinalizado: boolean
+    - formaNotificacionCliente: String
+    - emailCliente: String
+    - telefonoCliente: String
+    + notificarPagoCuota(): void
+    + buscarFormaNotificacion(): void
+    + buscarDatosContacto(): void
+    + crearObservadores(): void
+    + suscribir(observador: IObservadorPagoCuota): void
+    + desuscribir(observador: IObservadorPagoCuota): void
+    + notificar(): void
+    + finCU(): void
+}
+
+class InterfazCorreo <<boundary>> {
+    + new(): InterfazCorreo
+    + actualizar(correo: String, telefono: String, montoPagado: double, prestamoFinalizado: boolean): void
+    + enviarCorreo(correo: String, telefono: String, montoPagado: double, prestamoFinalizado: boolean): void
+}
+
+class InterfazSMS <<boundary>> {
+    + new(): InterfazSMS
+    + actualizar(correo: String, telefono: String, montoPagado: double, prestamoFinalizado: boolean): void
+    + enviarMensaje(correo: String, telefono: String, montoPagado: double, prestamoFinalizado: boolean): void
+}
+
+class Cliente <<entity>> {
+    - email: String
+    - telefono: String
+    - formaNotificacion: String
+    + getFormaNotificacion(): String
+    + getCorreo(): String
+    + getTelefono(): String
+}
+
+GestorRegistrarPagoCuota ..|> ISujeto
+InterfazCorreo ..|> IObservadorPagoCuota
+InterfazSMS ..|> IObservadorPagoCuota
+ISujeto ..> IObservadorPagoCuota
+GestorRegistrarPagoCuota ..> InterfazCorreo
+GestorRegistrarPagoCuota ..> InterfazSMS 
+GestorRegistrarPagoCuota ..> Cliente 
+@enduml

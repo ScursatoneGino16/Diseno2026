@@ -1,0 +1,84 @@
+@startuml Adapter - Vista Estática
+skinparam classAttributeIconSize 0
+
+class GestorRegistrarPagoCuota <<control>> {
+    - clienteLogueado: Cliente
+    - prestamoSeleccionado: Prestamo
+    - enteCobroExterno: String
+    - dniClienteLogueado: int
+    - fechaHoraAcreditacion: DateTime
+    - montoOtorgado: double
+    - codigoPagoEnteExterno: String
+    + validarPrestamoEnteExterno(): void
+    + obtenerCodigoPagoEnteExterno(): void
+    + crearAdaptador(): IAdaptadorCentralDeudores
+}
+
+class Prestamo <<entity>> {
+    - enteExterno: String
+    - fechaHoraAcreditacion: DateTime
+    - montoOtorgado: double
+    + obtenerEnteCobroExterno(): String
+    + getFechaHoraAcreditacion(): DateTime
+    + getMontoOtorgado(): double
+}
+
+class Cliente <<entity>> {
+    - dni: int
+    + getDNI(): int
+}
+
+interface IAdaptadorCentralDeudores <<interface>> {
+    + obtenerCodigoPago(dni: int, fechaHoraAcreditacion: DateTime, montoOtorgado: double): String
+    + solicitarHistorialPrestamos(): void
+    + adaptarHistorialPrestamos(): void
+    + filtrarPrestamoVigente(): String
+}
+
+class AdaptadorSENASA <<adapter>> {
+    - nombreEmpresa: String
+    - dni: int
+    - fechaHoraAcreditacion: DateTime
+    - montoOtorgado: double
+    - historialRecibido: String
+    - historialAdaptado: String[][]
+    - codigoPago: String
+    + new(): AdaptadorSENASA
+    + obtenerCodigoPago(dni: int, fechaHoraAcreditacion: DateTime, montoOtorgado: double): String
+    + solicitarHistorialPrestamos(): void
+    + adaptarHistorialPrestamos(): void
+    + filtrarPrestamoVigente(): String
+}
+
+class AdaptadorAGIP <<adapter>> {
+    - codigoEmpresa: String
+    - dni: int
+    - fechaHoraAcreditacion: DateTime
+    - montoOtorgado: double
+    - historialRecibido: String
+    - historialAdaptado: String[][]
+    - codigoPago: String
+    + new(): AdaptadorAGIP
+    + obtenerCodigoPago(dni: int, fechaHoraAcreditacion: DateTime, montoOtorgado: double): String
+    + solicitarHistorialPrestamos(): void
+    + adaptarHistorialPrestamos(): void
+    + filtrarPrestamoVigente(): String
+}
+
+class ServicioSENASA {
+    + consultarDeuda(dni: int, fechaHora: DateTime): String
+}
+
+class ServicioAGIP {
+    + consultarAdeudamiento(dni: int, codigoEmpresa: String): String
+}
+
+GestorRegistrarPagoCuota ..> IAdaptadorCentralDeudores
+GestorRegistrarPagoCuota ..>  Prestamo 
+GestorRegistrarPagoCuota ..>  Cliente 
+Cliente --> "0..*" Prestamo : prestamo
+AdaptadorSENASA ..|> IAdaptadorCentralDeudores
+AdaptadorAGIP ..|> IAdaptadorCentralDeudores
+AdaptadorSENASA o--> "1" ServicioSENASA : servicio
+AdaptadorAGIP o--> "1" ServicioAGIP : servicio
+@enduml

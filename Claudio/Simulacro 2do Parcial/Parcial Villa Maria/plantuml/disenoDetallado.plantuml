@@ -1,0 +1,169 @@
+@startuml DisenoDetallado
+left to right direction
+
+' ================= MOBILE =================
+component "MobileUI" <<subsistema>> as MUI {
+    component "ProductoPresMobile" <<subsistema>> as P1
+    component "CompraVentaPresMobile" <<subsistema>> as P2
+    component "ParticipantePresMobile" <<subsistema>> as P3
+    component "UsuarioPresMobile" <<subsistema>> as P4
+    component "PoliticaBeneficiosPresMobile" <<subsistema>> as P5
+}
+
+interface "IMobileUIRestAPI" as IMUI
+MUI - IMUI
+
+' ================= MOBILEGATEWAY =================
+component "MobileAPIGateway" as MAG
+label "IMobileUIRestAPI" as L1
+label "ICompraVentaRestAPI" as L2
+label "IAutenticacionUsuariosRestAPI" as L3
+label "IProductosRestAPI" as L4
+label "IParticipantesRestAPI" as L5
+label "IPoliticaBeneficiosRestAPI" as L6
+MAG -( L1
+MAG -( L2
+MAG -( L3
+MAG -( L4
+MAG -( L5
+MAG -( L6
+' ================= PUBLIC =================
+component "PublicAPIGateway" as PAG
+label "ILoginBiometricoRestAPI" as L7
+label "INotificacionPushRestAPI" as L8
+label "IGoogleMaps" as L10
+label "IVisualizacionEnMapaRestAPI" as L11
+label "IBiometriaAndroid" as L18
+label "IFCM" as L19
+PAG -( L7
+PAG -( L8
+PAG -( L10
+PAG -( L11
+PAG -( L18
+PAG -( L19
+' ================= COMPRAVENTA =================
+component "ServicioCompraVenta" <<microservicio>> as SCV {
+    component "CompraVenta" as CV
+    component "ComprobanteDonacion" as CD
+    component "RecaudacionPorGrado" as RG
+    component "DistribuidorDonacionPorGrado" as DIS
+    component "PersistenciaCompraVenta" as PCV
+}
+database "BD CompraVenta" as BDCV
+DIS ..> RG
+DIS ..> CV
+PCV ..> CV
+PCV ..> CD
+PCV ..> RG
+PCV ..> BDCV
+CV ..> CD
+
+interface "ICompraVentaRestAPI" as ISCV
+SCV - ISCV
+label "IEnviadorNotificacionPushAPI" as L12
+SCV -( L12
+
+' ================= PRODUCTOS =================
+component "ServicioProductos" <<microservicio>> as SPR {
+    component "Producto" as PR
+    component "GradoBeneficio" as GR
+    component "PersistenciaProductos" as PPR
+}
+database "BD Productos" as BDPR
+PPR ..> PR
+PPR ..> GR
+PPR ..> BDPR
+PR ..> GR
+
+interface "IProductosRestAPI" as ISPR
+SPR - ISPR
+label "IEnviadorNotificacionPushAPI" as L14
+label "IVisualizacionEnMapaAPI" as L20
+SPR -( L14
+SPR -( L20
+
+' ================= PARTICIPANTES =================
+component "ServicioParticipantes" <<microservicio>> as SPA {
+    component "Participante" as PA
+    component "PersistenciaParticipantes" as PPA
+}
+database "BD Participantes" as BDPA
+PPA ..> PA
+PPA ..> BDPA
+
+interface "IParticipantesRestAPI" as ISPA
+SPA - ISPA
+
+' ================= BENEFICIOS =================
+component "ServicioPoliticaBeneficios" <<microservicio>> as SBE {
+    component "PoliticaVenta" as PV
+    component "RangoPrecio" as RP
+    component "ValidadorPorcentajeDonacion" as PD
+    component "PersistenciaPoliticaBeneficios" as PPB
+}
+database "BD PoliticaBeneficios" as BDBE
+PPB ..> PV
+PPB ..> RP
+PPB ..> BDBE
+PD ..> PV
+PD ..> RP
+
+interface "IPoliticaBeneficiosRestAPI" as ISBE
+SBE - ISBE
+
+' ================= USUARIOS =================
+component "ServicioAutenticacionUsuarios" <<microservicio>> as SAU {
+    component "Usuario" as US
+    component "Perfil" as PE
+    component "Sesion" as SE
+    component "Permiso" as PER
+    component "PersistenciaUsuarios" as PPU
+}
+database "BD Usuarios" as BDUS
+PPU ..> US
+PPU ..> SE
+PPU ..> PE
+PPU ..> BDUS
+PPU ..> PER
+US ..> PE
+US ..> SE
+PE ..> PER
+
+interface "IAutenticacionUsuariosRestAPI" as ISAU
+SAU - ISAU
+label "ILoginBiometricoAPI" as L15
+SAU -( L15
+
+' ================= NOTIFICACIONES =================
+component "ServicioNotificacionPush" <<microservicio>> as SNP {
+    component "NotificacionPush" as NP
+}
+interface "INotificacionPushRestAPI" as ISNP
+SNP - ISNP
+interface "IEnviadorNotificacionPushAPI" as IENP
+SNP -- IENP
+label "ILibreriaFCM" as L21
+SNP -( L21
+
+' ================= MAPA =================
+component "ServicioVisualizacionEnMapa" <<microservicio>> as SVM {
+    component "VisualizacionEnMapa" as VM
+}
+interface "IVisualizacionEnMapaRestAPI" as ISVM
+SVM - ISVM
+interface "IVisualizacionEnMapaAPI" as IVMA
+SVM -- IVMA
+label "ILibreriaGoogleMaps" as L16
+SVM -( L16
+
+' ================= LOGIN =================
+component "ServicioLoginBiometrico" <<microservicio>> as SLB {
+    component "LoginBiometrico" as LB
+}
+interface "ILoginBiometricoRestAPI" as ISLB
+SLB - ISLB
+interface "ILoginBiometricoAPI" as ILBA
+SLB -- ILBA
+label "ILibreriaBiometriaAndroid" as L17
+SLB -( L17
+@enduml

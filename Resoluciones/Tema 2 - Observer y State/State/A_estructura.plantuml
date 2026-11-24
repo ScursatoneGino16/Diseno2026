@@ -1,0 +1,186 @@
+@startuml State - Vista de Diseño de la Estructura
+' Tema 2 - Punto 2: Patrón State
+' Problema: modificar el comportamiento variable de la clase Prestamo
+' de acuerdo con la situación (estado) en la que se encuentra.
+skinparam classAttributeIconSize 0
+hide empty members
+
+title Patrón State - Vista de Diseño de la Estructura\nContexto: Prestamo
+
+class GestorRegistrarPagoCuota <<control>>
+{
+    - prestamoSeleccionado: Prestamo
+    - cuotaSeleccionada: Cuota
+    - estadoPagada: EstadoCuota
+    - fechaActual: DateTime
+    - prestamoFinalizado: Boolean
+    + tomarConfirmacion(): void
+    + registrarPagoCuota(): void
+    + buscarEstadoPagada(): void
+    + getFechaActual(): DateTime
+    + pagarCuota(): void
+    + finCU(): void
+}
+
+class Prestamo <<entity>>
+{
+    - nro: int
+    - enteExterno: String
+    - fechaHoraSolicitud: DateTime
+    - fechaHoraAcreditacion: DateTime
+    - montoOtorgado: Double
+    - saldoPendiente: Double
+    - tasaInteres: Double
+    - estadoActual: Estado
+    - cambioEstado: CambioEstado[]
+    - cuota: Cuota[]
+    + pagarCuota(cuota: Cuota, estadoPagada: EstadoCuota, fechaHoraActual: DateTime): void
+    + calcularSaldoPendiente(): Double
+    + setSaldoPendiente(saldo: Double): void
+    + estaFinalizado(): Boolean
+    + estasActivo(): Boolean
+    + setEstadoActual(estado: Estado): void
+    + agregarCambioEstado(cambioEstado: CambioEstado): void
+    + getNumero(): int
+}
+
+class CambioEstado <<entity>>
+{
+    - fechaHoraInicio: DateTime
+    - fechaHoraFin: DateTime
+    + new(fechaHoraInicio: DateTime, estado: Estado): CambioEstado
+    + sosActual(): Boolean
+    + setFechaHoraFin(fechaHoraFin: DateTime): void
+}
+
+abstract class Estado
+{
+    - nombre: String
+    - descripcion: String
+    + acreditar(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[]): void
+    + rechazar(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[]): void
+    + pagarCuota(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[], cuotas: Cuota[]): void
+    + vencerCuota(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[]): void
+    + iniciarAccionJudicial(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[]): void
+    + esActivo(): Boolean
+    + esFinalizado(): Boolean
+    + getNombre(): String
+}
+
+class Creado
+{
+    + new(): Creado
+    + acreditar(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[]): void
+    + rechazar(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[]): void
+    + crearEstado(): Estado
+    + crearCambioEstado(fechaHoraActual: DateTime, estado: Estado): CambioEstado
+}
+
+class AlDia
+{
+    + new(): AlDia
+    + pagarCuota(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[], cuotas: Cuota[]): void
+    + vencerCuota(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[]): void
+    + esActivo(): Boolean
+    + validarCuotasRestantes(cuotas: Cuota[]): Boolean
+    + finalizarCambioEstadoActual(cambiosEstado: CambioEstado[], fechaHoraActual: DateTime): void
+    + crearEstado(): Estado
+    + crearCambioEstado(fechaHoraActual: DateTime, estado: Estado): CambioEstado
+}
+
+class EnMora
+{
+    + new(): EnMora
+    + pagarCuota(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[], cuotas: Cuota[]): void
+    + vencerCuota(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[]): void
+    + iniciarAccionJudicial(prestamo: Prestamo, fechaHoraActual: DateTime, cambiosEstado: CambioEstado[]): void
+    + esActivo(): Boolean
+    + validarCuotasRestantes(cuotas: Cuota[]): Boolean
+    + hayCuotasVencidas(cuotas: Cuota[]): Boolean
+    + finalizarCambioEstadoActual(cambiosEstado: CambioEstado[], fechaHoraActual: DateTime): void
+    + crearEstado(): Estado
+    + crearCambioEstado(fechaHoraActual: DateTime, estado: Estado): CambioEstado
+}
+
+class Rechazado
+{
+    + new(): Rechazado
+}
+
+class Finalizado
+{
+    + new(): Finalizado
+    + esFinalizado(): Boolean
+}
+
+class ConAccionJudicial
+{
+    + new(): ConAccionJudicial
+}
+
+class Cuota <<entity>>
+{
+    - nro: int
+    - montoBase: Double
+    - fechaVencimiento: Date
+    + pagar(estadoPagada: EstadoCuota): void
+    + setEstado(estado: EstadoCuota): void
+    + estasPagada(): Boolean
+    + estasVencida(): Boolean
+}
+
+class EstadoCuota <<entity>>
+{
+    - nombre: String
+    - descripcion: String
+    + sosPagada(): Boolean
+    + sosVencida(): Boolean
+}
+
+GestorRegistrarPagoCuota ..> Prestamo
+GestorRegistrarPagoCuota ..> EstadoCuota
+
+Prestamo --> "1" Estado : estadoActual
+Prestamo --> "1..*" CambioEstado : cambioEstado
+Prestamo --> "1..*" Cuota : cuota
+CambioEstado --> "1" Estado : estado
+Cuota --> "1" EstadoCuota : estado
+
+Creado --|> Estado
+AlDia --|> Estado
+EnMora --|> Estado
+Rechazado --|> Estado
+Finalizado --|> Estado
+ConAccionJudicial --|> Estado
+
+AlDia ..> Finalizado : <<create>>
+AlDia ..> EnMora : <<create>>
+EnMora ..> AlDia : <<create>>
+EnMora ..> Finalizado : <<create>>
+EnMora ..> ConAccionJudicial : <<create>>
+Creado ..> AlDia : <<create>>
+Creado ..> Rechazado : <<create>>
+AlDia ..> CambioEstado : <<create>>
+EnMora ..> CambioEstado : <<create>>
+
+note right of Estado
+  Clase abstracta. Todos los métodos de transición
+  tienen un comportamiento por defecto que lanza una
+  excepción ("operación no válida para el estado").
+  Cada estado concreto redefine solo las transiciones
+  válidas según la máquina de estados del Préstamo.
+  pagarCuota() es el método polimórfico del escenario.
+end note
+
+note bottom of Prestamo
+  Para aplicar el patrón se agrega el puntero
+  estadoActual y el método setEstadoActual().
+end note
+
+note bottom of EstadoCuota
+  Los estados de la Cuota no forman parte de la
+  consigna: se mantienen como en el análisis
+  (entidad con métodos sosX()).
+end note
+
+@enduml

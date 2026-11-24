@@ -1,0 +1,88 @@
+@startuml State - Vista Estática
+skinparam classAttributeIconSize 0
+
+class GestorRegistrarPagoCuota <<control>> {
+    - prestamoSeleccionado: Prestamo
+    - fechaActual: DateTime
+    + finalizarPrestamo(): void
+    + getFechaActual(): DateTime
+}
+
+class Prestamo <<entity>> {
+    + acreditar(): void
+    + rechazar(): void
+    + finalizar(fechaHoraActual: DateTime): void
+    + marcarAlDia(): void
+    + marcarEnMora(): void
+    + iniciarAccionJudicial(): void
+    + setEstadoActual(estado: Estado): void
+    + setCambioEstado(cambioEstado: CambioEstado): void
+}
+
+class CambioEstado <<entity>> {
+    - fechaHoraInicio: DateTime
+    - fechaHoraFin: DateTime
+    + new(fechaHoraInicio: DateTime, estado: Estado): CambioEstado
+    + sosActual(): boolean
+    + setFechaHoraFin(fechaHoraFin: DateTime): void
+}
+
+abstract class Estado <<abstract>> {
+    + acreditar(): void
+    + rechazar(): void
+    + finalizar(prestamo: Prestamo, fechaHoraActual: DateTime, historial: CambioEstado[]): void
+    + marcarAlDia(): void
+    + marcarEnMora(): void
+    + iniciarAccionJudicial(): void
+}
+
+class Creado {
+    + new(): Creado
+    + acreditar(): void
+    + rechazar(): void
+}
+
+class AlDia {
+    + new(): AlDia
+    + finalizar(prestamo: Prestamo, fechaHoraActual: DateTime, historial: CambioEstado[]): void
+    + marcarAlDia(): void
+    + marcarEnMora(): void
+    + cambiarEstado(prestamo: Prestamo, fechaHoraActual: DateTime, historial: CambioEstado[]): void
+    + crearEstado(): Finalizado
+    + crearCambioEstado(fechaHoraActual: DateTime, estado: Estado): CambioEstado
+}
+
+class EnMora {
+    + new(): EnMora
+    + finalizar(prestamo: Prestamo, fechaHoraActual: DateTime, historial: CambioEstado[]): void
+    + marcarAlDia(): void
+    + marcarEnMora(): void
+    + iniciarAccionJudicial(): void
+}
+
+class Finalizado {
+    + new(): Finalizado
+}
+
+class Rechazado {
+    + new(): Rechazado
+}
+
+class ConAccionJudicial {
+    + new(): ConAccionJudicial
+}
+
+GestorRegistrarPagoCuota ..> Prestamo 
+Prestamo --> "1" Estado : estadoActual
+Prestamo --> "1..*" CambioEstado : cambioEstado
+CambioEstado --> "1" Estado : estado
+Estado <|- Creado
+Estado <|-- AlDia
+Estado <|-- EnMora
+Estado <|-- Finalizado
+Estado <|-- Rechazado
+Estado <|- ConAccionJudicial
+AlDia ..> Prestamo
+AlDia ..> CambioEstado
+AlDia ..> Finalizado
+@enduml

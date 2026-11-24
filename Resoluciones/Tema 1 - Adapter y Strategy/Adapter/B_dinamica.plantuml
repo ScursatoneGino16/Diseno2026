@@ -1,0 +1,59 @@
+@startuml Adapter - Vista Dinámica
+' Tema 1 - Punto 1: Patrón Adapter
+' Escenario: pago de cuota vencida de un préstamo en mora con cobro por ente externo SENASA
+autonumber
+title Patrón Adapter - Vista Dinámica\nEscenario: préstamo marcado como cobro por ente externo SENASA
+
+actor ":Cliente" as C
+boundary ":PantallaRegistrarPagoCuota" as P
+control ":GestorRegistrarPagoCuota" as G
+entity "logueado:Cliente" as CL
+entity "seleccionado:Prestamo" as PR
+participant ":ServicioSENASA" as S
+
+C -> P: tomarSeleccionCuota()
+P -> G: tomarSeleccionCuota(cuota: Cuota)
+
+note over G
+  validarEstadoCuota() y los mensajes
+  previos quedan igual que en el análisis
+end note
+
+G -> G: validarPrestamoEnteExterno(): Boolean
+G -> PR: obtenerEnteCobroExterno(): String
+
+G -> G: obtenerCodigoPagoEnteExterno()
+G -> CL: getDNI(): String
+G -> PR: getFechaHoraAcreditacion(): DateTime
+G -> PR: getMontoOtorgado(): Double
+G -> PR: calcularMontoTotalADevolver(): Double
+
+G -> G: crearAdaptadorCentralDeudores(enteCobroExterno: String): IAdaptadorCentralDeudores
+create participant ":AdaptadorSENASA" as A
+G --> A: new()
+
+G -> A: obtenerCodigoPago(dni: String, fechaHoraAcreditacion: DateTime, montoOtorgado: Double, montoTotalADevolver: Double): String
+
+A -> A: pedirHistorialPrestamos()
+A -> A: convertirFechaHora(fechaHora: DateTime): String
+A -> S: consultarDeuda(dni: String, fechaHora: String): String
+
+A -> A: adaptarHistorialPrestamos()
+group Adaptar historial [mientras existan préstamos en el JSON recibido]
+    A -> A: (parsea montoOriginal, fechaAcreditacion,\ncodigoPago y nombreEmpresa a una fila de historialAdaptado)
+end
+
+A -> A: filtrarPrestamoVigente(): String
+group Buscar préstamo vigente [mientras existan filas en historialAdaptado]
+    A -> A: (compara nombreEmpresa y montoOriginal\ncontra "CreditIn" y montoOtorgado)
+end
+
+A --> G: codigoPago: String
+
+note over G
+  Continúa igual que en el análisis:
+  calcularMontoAAbonar() (rediseñado con Strategy),
+  mostrarTotalAPagar(), pedirConfirmacion(), etc.
+end note
+
+@enduml

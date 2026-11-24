@@ -1,0 +1,107 @@
+@startuml Strategy - Vista de Diseño de la Estructura
+' Tema 1 - Punto 2: Patrón Strategy
+' Problema: calcular en forma flexible el recargo por mora de una cuota
+' según la definición de mora del tipo de préstamo (porcentual o fija).
+skinparam classAttributeIconSize 0
+hide empty members
+
+title Patrón Strategy - Vista de Diseño de la Estructura\nCU Registrar pago de cuota de un préstamo
+
+class GestorRegistrarPagoCuota <<control>>
+{
+    - prestamoSeleccionado: Prestamo
+    - cuotaSeleccionada: Cuota
+    - fechaActual: Date
+    - montoCuota: Double
+    - fechaVencimientoCuota: Date
+    - definicionMora: DefinicionMora
+    - recargo: Double
+    - montoAAbonar: Double
+    - estrategiaCalculoMora: IEstrategiaCalculoMora
+    + calcularMontoAAbonar(): void
+    + getFechaActual(): Date
+    + crearEstrategiaCalculoMora(definicionMora: DefinicionMora): IEstrategiaCalculoMora
+    + tomarConfirmacion(): void
+}
+
+interface IEstrategiaCalculoMora <<interface>>
+{
+    + calcularRecargo(montoBase: Double, fechaVencimiento: Date, fechaActual: Date, definicionMora: DefinicionMora): Double
+    + calcularDiasAtraso(fechaVencimiento: Date, fechaActual: Date): int
+}
+
+class EstrategiaCalculoPorcentual <<estrategia>>
+{
+    + new(): EstrategiaCalculoPorcentual
+    + calcularRecargo(montoBase: Double, fechaVencimiento: Date, fechaActual: Date, definicionMora: DefinicionMora): Double
+    + calcularDiasAtraso(fechaVencimiento: Date, fechaActual: Date): int
+}
+
+class EstrategiaCalculoFijo <<estrategia>>
+{
+    + new(): EstrategiaCalculoFijo
+    + calcularRecargo(montoBase: Double, fechaVencimiento: Date, fechaActual: Date, definicionMora: DefinicionMora): Double
+    + calcularDiasAtraso(fechaVencimiento: Date, fechaActual: Date): int
+}
+
+class Prestamo <<entity>>
+{
+    - nro: int
+    - montoOtorgado: Double
+    - saldoPendiente: Double
+    - tasaInteres: Double
+    + obtenerDefinicionMora(): DefinicionMora
+}
+
+class TipoPrestamo <<entity>>
+{
+    - nombre: String
+    - descripcion: String
+    - cantidadCuotasHabilitadas: int
+    - tasaInteres: Double
+    + obtenerDefinicionMora(): DefinicionMora
+}
+
+class DefinicionMora <<entity>>
+{
+    - descripcion: String
+    - porcentajeRecargo: Double
+    - montoFijoRecargo: Double
+    + esPorcentual(): Boolean
+    + getPorcentajeRecargo(): Double
+    + getMontoFijoRecargo(): Double
+}
+
+class Cuota <<entity>>
+{
+    - nro: int
+    - montoBase: Double
+    - fechaVencimiento: Date
+    + getMonto(): Double
+    + getFechaVencimiento(): Date
+}
+
+GestorRegistrarPagoCuota ..> IEstrategiaCalculoMora
+GestorRegistrarPagoCuota ..> EstrategiaCalculoPorcentual : <<create>>
+GestorRegistrarPagoCuota ..> EstrategiaCalculoFijo : <<create>>
+GestorRegistrarPagoCuota ..> Prestamo
+GestorRegistrarPagoCuota ..> Cuota
+GestorRegistrarPagoCuota ..> DefinicionMora
+
+EstrategiaCalculoPorcentual ..|> IEstrategiaCalculoMora
+EstrategiaCalculoFijo ..|> IEstrategiaCalculoMora
+
+EstrategiaCalculoPorcentual ..> DefinicionMora
+EstrategiaCalculoFijo ..> DefinicionMora
+
+Prestamo --> "1" TipoPrestamo : tipoPrestamo
+Prestamo --> "1..*" Cuota : cuota
+TipoPrestamo --> "1" DefinicionMora : definicionMora
+
+note right of IEstrategiaCalculoMora
+  calcularRecargo() es el método polimórfico.
+  Porcentual: recargo = montoBase * porcentajeRecargo * diasAtraso
+  Fijo:       recargo = montoFijoRecargo * diasAtraso
+end note
+
+@enduml

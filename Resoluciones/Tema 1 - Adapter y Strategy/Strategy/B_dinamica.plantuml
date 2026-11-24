@@ -1,0 +1,53 @@
+@startuml Strategy - Vista Dinámica
+' Tema 1 - Punto 2: Patrón Strategy
+' Escenario: cuota vencida de un préstamo en mora con recargo por mora PORCENTUAL
+autonumber
+title Patrón Strategy - Vista Dinámica\nEscenario: recargo por mora porcentual
+
+actor ":Cliente" as C
+boundary ":PantallaRegistrarPagoCuota" as P
+control ":GestorRegistrarPagoCuota" as G
+entity "seleccionado:Prestamo" as PR
+entity "seleccionada:Cuota" as CU
+entity ":TipoPrestamo" as TP
+entity "dl:DefinicionMora" as DM
+
+note over G
+  Los mensajes desde tomarSeleccionCuota() hasta
+  obtenerCodigoPagoEnteExterno() (Adapter)
+  quedan igual que en el análisis
+end note
+
+G -> G: calcularMontoAAbonar()
+G -> G: getFechaActual(): Date
+G -> CU: getMonto(): Double
+G -> CU: getFechaVencimiento(): Date
+G -> PR: obtenerDefinicionMora(): DefinicionMora
+PR -> TP: obtenerDefinicionMora(): DefinicionMora
+
+G -> DM: esPorcentual(): Boolean
+G -> G: crearEstrategiaCalculoMora(definicionMora: DefinicionMora): IEstrategiaCalculoMora
+create participant ":EstrategiaCalculoPorcentual" as E
+G --> E: new()
+
+G -> E: calcularRecargo(montoBase: Double, fechaVencimiento: Date, fechaActual: Date, definicionMora: DefinicionMora): Double
+E -> E: calcularDiasAtraso(fechaVencimiento: Date, fechaActual: Date): int
+E -> DM: getPorcentajeRecargo(): Double
+E --> G: recargo: Double
+
+note over G
+  montoAAbonar = montoBase + recargo
+end note
+
+G -> P: mostrarTotalAPagar(montoAAbonar: Double)
+G -> P: pedirConfirmacion()
+C -> P: tomarConfirmacion()
+P -> G: tomarConfirmacion()
+
+note over G
+  A partir de aquí los mensajes quedan
+  igual que en el análisis (registrarPagoCuota(),
+  <<include>> Registrar pago, pagarCuota(), ...)
+end note
+
+@enduml

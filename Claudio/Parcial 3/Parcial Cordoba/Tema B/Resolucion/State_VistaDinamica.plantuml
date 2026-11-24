@@ -1,0 +1,22 @@
+@startuml State - Vista Dinámica
+control ":GestorRegistrarPagoCuota" as G
+entity "seleccionado:Prestamo" as P
+participant ":AlDia" as AD <<state>>
+entity ":CambioEstado" as HE
+entity "actual:CambioEstado" as CA
+G -> G: finalizarPrestamo()
+G -> G: getFechaActual(): DateTime
+G -> P: finalizar(fechaHoraActual: DateTime)
+P -> AD: finalizar(this: Prestamo, fechaHoraActual: DateTime, historial: CambioEstado[])
+AD -> AD: cambiarEstado(prestamo: Prestamo, fechaHoraActual: DateTime, historial: CambioEstado[])
+AD -> HE: *sosActual(): boolean
+AD -> CA: setFechaHoraFin(fechaHoraFin: DateTime)
+AD -> AD: crearEstado(): Finalizado
+create participant "nuevo:Finalizado" as F <<state>>
+AD --> F: new(): Finalizado
+AD -> AD: crearCambioEstado(fechaHoraActual: DateTime, estado: Estado): CambioEstado
+create entity "nuevo:CambioEstado" as NC
+AD --> NC: new(fechaHoraInicio: DateTime, estado: Estado): CambioEstado
+AD -> P: setEstadoActual(estado: Estado)
+AD -> P: setCambioEstado(cambioEstado: CambioEstado)
+@enduml

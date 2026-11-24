@@ -1,0 +1,142 @@
+@startuml Adapter - Vista de Diseño de la Estructura
+' Tema 1 - Punto 1: Patrón Adapter
+' Problema: consultar la central de deudores (SENASA o AGIP) asignada al préstamo
+' y obtener el código de pago, sin importar el formato que devuelva cada servicio.
+skinparam classAttributeIconSize 0
+hide empty members
+
+title Patrón Adapter - Vista de Diseño de la Estructura\nCU Registrar pago de cuota de un préstamo
+
+class GestorRegistrarPagoCuota <<control>>
+{
+    - clienteLogueado: Cliente
+    - prestamoSeleccionado: Prestamo
+    - cuotaSeleccionada: Cuota
+    - dniClienteLogueado: String
+    - enteCobroExterno: String
+    - fechaHoraAcreditacion: DateTime
+    - montoOtorgado: Double
+    - montoTotalADevolver: Double
+    - codigoPagoEnteExterno: String
+    - adaptadorCentralDeudores: IAdaptadorCentralDeudores
+    + tomarSeleccionCuota(cuota: Cuota): void
+    + validarEstadoCuota(): void
+    + validarPrestamoEnteExterno(): Boolean
+    + obtenerCodigoPagoEnteExterno(): void
+    + crearAdaptadorCentralDeudores(enteCobroExterno: String): IAdaptadorCentralDeudores
+    + calcularMontoAAbonar(): void
+}
+
+interface IAdaptadorCentralDeudores <<interface>>
+{
+    + obtenerCodigoPago(dni: String, fechaHoraAcreditacion: DateTime, montoOtorgado: Double, montoTotalADevolver: Double): String
+    + pedirHistorialPrestamos(): void
+    + adaptarHistorialPrestamos(): void
+    + filtrarPrestamoVigente(): String
+}
+
+class AdaptadorSENASA
+{
+    - servicioSENASA: ServicioSENASA
+    - nombreEmpresa: String = "CreditIn"
+    - dni: String
+    - fechaHoraAcreditacion: DateTime
+    - montoOtorgado: Double
+    - historialRecibido: String
+    - historialAdaptado: String[][]
+    + new(): AdaptadorSENASA
+    + obtenerCodigoPago(dni: String, fechaHoraAcreditacion: DateTime, montoOtorgado: Double, montoTotalADevolver: Double): String
+    + pedirHistorialPrestamos(): void
+    + convertirFechaHora(fechaHora: DateTime): String
+    + adaptarHistorialPrestamos(): void
+    + filtrarPrestamoVigente(): String
+}
+
+class AdaptadorAGIP
+{
+    - servicioAGIP: ServicioAGIP
+    - codigoEmpresa: String
+    - dni: String
+    - fechaHoraAcreditacion: DateTime
+    - montoTotalADevolver: Double
+    - historialRecibido: String
+    - historialAdaptado: String[][]
+    + new(): AdaptadorAGIP
+    + obtenerCodigoPago(dni: String, fechaHoraAcreditacion: DateTime, montoOtorgado: Double, montoTotalADevolver: Double): String
+    + pedirHistorialPrestamos(): void
+    + adaptarHistorialPrestamos(): void
+    + convertirFecha(fecha: String): Date
+    + filtrarPrestamoVigente(): String
+}
+
+class ServicioSENASA
+{
+    + consultarDeuda(dni: String, fechaHora: String): String
+}
+
+class ServicioAGIP
+{
+    + consultarAdeudamiento(dni: String, codigoEmpresa: String): String
+}
+
+class Prestamo <<entity>>
+{
+    - nro: int
+    - enteExterno: String
+    - fechaHoraSolicitud: DateTime
+    - fechaHoraAcreditacion: DateTime
+    - montoOtorgado: Double
+    - tasaInteres: Double
+    - saldoPendiente: Double
+    + obtenerEnteCobroExterno(): String
+    + getFechaHoraAcreditacion(): DateTime
+    + getMontoOtorgado(): Double
+    + calcularMontoTotalADevolver(): Double
+}
+
+class Cliente <<entity>>
+{
+    - apellido: String
+    - nombre: String
+    - dni: String
+    - email: String
+    - telefono: String
+    + getDNI(): String
+}
+
+GestorRegistrarPagoCuota ..> IAdaptadorCentralDeudores
+GestorRegistrarPagoCuota ..> AdaptadorSENASA : <<create>>
+GestorRegistrarPagoCuota ..> AdaptadorAGIP : <<create>>
+GestorRegistrarPagoCuota ..> Prestamo
+GestorRegistrarPagoCuota ..> Cliente
+
+AdaptadorSENASA ..|> IAdaptadorCentralDeudores
+AdaptadorAGIP ..|> IAdaptadorCentralDeudores
+
+AdaptadorSENASA o--> "1" ServicioSENASA : servicioSENASA
+AdaptadorAGIP o--> "1" ServicioAGIP : servicioAGIP
+
+Cliente --> "0..*" Prestamo : prestamo
+
+note bottom of ServicioSENASA
+  Servicio externo (se adapta, no se modifica).
+  Devuelve un JSON en formato cadena con el
+  historial de préstamos acreditados para esa fecha:
+  montoOriginal, fechaAcreditacion, codigoPago,
+  nombreEmpresa.
+end note
+
+note bottom of ServicioAGIP
+  Servicio externo (se adapta, no se modifica).
+  Devuelve un XML en formato cadena con el
+  historial de préstamos acreditados por la empresa:
+  fechaAcreditacion, montoFinal, codigoPago.
+end note
+
+note right of IAdaptadorCentralDeudores
+  obtenerCodigoPago() es el método polimórfico.
+  Reemplaza a obtenerCodigoPago() de la
+  boundary InterfazCentralDeudores del análisis.
+end note
+
+@enduml

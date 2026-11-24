@@ -1,0 +1,46 @@
+@startuml DisenoGlobal
+left to right direction
+component "MobileUI" <<subsistema>> as MUI
+component "MobileAPIGateway"  as MAPI
+component "PublicAPIGateway"  as Public
+
+rectangle "Externos" {
+  component "FCM"  as FCM
+  component "GoogleMapsAPI"  as GMAPS
+  component "BiometriaAndroid" as BIO
+}
+
+component "ServicioCompraVenta" <<microservicio>> as SCV
+database "BD CompraVenta" as BDCV
+component "ServicioProductos" <<microservicio>> as SP
+database "BD Productos" as BDP
+component "ServicioParticipantes" <<microservicio>> as SPA
+database "BD Participantes" as BDPA
+component "ServicioPoliticaBeneficios" <<microservicio>> as SPB
+database "BD PoliticaBeneficios" as BDB
+component "ServicioAutenticacionUsuarios" <<microservicio>> as SAU
+database "BD Usuarios" as BDUS
+component "ServicioNotificacionPush" <<microservicio>> as SNP
+component "ServicioVisualizacionEnMapa" <<microservicio>> as SVM
+component "ServicioLoginBiometrico" <<microservicio>> as SLB
+
+MUI --> MAPI
+MAPI --> SCV
+MAPI --> SP
+MAPI --> SPA
+MAPI --> SPB
+MAPI --> SAU
+GMAPS --> Public
+FCM --> Public
+
+BIO --> Public
+Public --> SNP
+Public --> SVM
+Public --> SLB
+
+SCV - BDCV
+SP - BDP
+SPA - BDPA
+SPB - BDB
+SAU - BDUS
+@enduml

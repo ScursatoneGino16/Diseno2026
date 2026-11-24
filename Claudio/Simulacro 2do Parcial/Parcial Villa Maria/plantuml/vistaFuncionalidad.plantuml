@@ -1,0 +1,25 @@
+@startuml VistaFuncionalidad
+left to right direction
+actor "Participante" as PA
+actor "Vendedor" as VE
+actor "Biometría Android" as BA
+actor "Google Maps" as GM
+actor "FCM" as FCM
+
+usecase "3. Confirmar venta\nde producto" as U3
+usecase "6. Iniciar sesión\ncon biometría" as U6
+usecase "7. Enviar notificación\nde entrega" as U7
+usecase "10. Consultar productos\na vender" as U10
+
+VE --|> PA
+
+PA --> U6
+U6 --> BA
+
+VE --> U3
+VE --> U10
+U10 --> GM
+
+U7 --> FCM
+U7 --> VE
+@enduml

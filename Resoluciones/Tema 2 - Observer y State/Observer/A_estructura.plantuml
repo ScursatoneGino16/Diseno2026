@@ -1,0 +1,118 @@
+@startuml Observer - Vista de Diseño de la Estructura
+' Tema 2 - Punto 1: Patrón Observer (implementación Push)
+' Problema: informar de manera flexible al cliente el pago exitoso de una cuota
+' y la finalización del préstamo, por mail y/o SMS según su forma de notificación.
+skinparam classAttributeIconSize 0
+hide empty members
+
+title Patrón Observer - Vista de Diseño de la Estructura\nCU Registrar pago de cuota de un préstamo
+
+interface ISujeto <<interface>>
+{
+    - observadores: IObservadorPagoCuota[]
+    + suscribir(observador: IObservadorPagoCuota): void
+    + quitar(observador: IObservadorPagoCuota): void
+    + notificar(): void
+}
+
+interface IObservadorPagoCuota <<interface>>
+{
+    + actualizar(nombreCliente: String, email: String, telefono: String, nroPrestamo: int, nroCuota: int, montoPagado: Double, fechaHoraPago: DateTime, prestamoFinalizado: Boolean): void
+}
+
+class GestorRegistrarPagoCuota <<control>>
+{
+    - observadores: IObservadorPagoCuota[]
+    - clienteLogueado: Cliente
+    - prestamoSeleccionado: Prestamo
+    - cuotaSeleccionada: Cuota
+    - nombreCliente: String
+    - emailCliente: String
+    - telefonoCliente: String
+    - formaNotificacionCliente: String[]
+    - montoAAbonar: Double
+    - fechaActual: DateTime
+    - prestamoFinalizado: Boolean
+    + tomarConfirmacion(): void
+    + notificarPagoCuota(): void
+    + buscarFormaNotificacion(): void
+    + crearObservadores(formaNotificacion: String[]): IObservadorPagoCuota[]
+    + suscribir(observador: IObservadorPagoCuota): void
+    + quitar(observador: IObservadorPagoCuota): void
+    + notificar(): void
+    + finCU(): void
+}
+
+class InterfazCorreo <<boundary>>
+{
+    - asunto: String
+    - cuerpoCorreo: String
+    + new(): InterfazCorreo
+    + actualizar(nombreCliente: String, email: String, telefono: String, nroPrestamo: int, nroCuota: int, montoPagado: Double, fechaHoraPago: DateTime, prestamoFinalizado: Boolean): void
+    + armarMensaje(nombreCliente: String, nroPrestamo: int, nroCuota: int, montoPagado: Double, fechaHoraPago: DateTime, prestamoFinalizado: Boolean): String
+    + enviarCorreo(email: String, asunto: String, cuerpoCorreo: String): void
+}
+
+class InterfazSMS <<boundary>>
+{
+    - textoSMS: String
+    + new(): InterfazSMS
+    + actualizar(nombreCliente: String, email: String, telefono: String, nroPrestamo: int, nroCuota: int, montoPagado: Double, fechaHoraPago: DateTime, prestamoFinalizado: Boolean): void
+    + armarMensaje(nombreCliente: String, nroPrestamo: int, nroCuota: int, montoPagado: Double, fechaHoraPago: DateTime, prestamoFinalizado: Boolean): String
+    + enviarSMS(telefono: String, textoSMS: String): void
+}
+
+class Cliente <<entity>>
+{
+    - apellido: String
+    - nombre: String
+    - dni: String
+    - email: String
+    - telefono: String
+    - formaNotificacion: String[]
+    + getNombre(): String
+    + getCorreo(): String
+    + getTelefono(): String
+    + getFormaNotificacion(): String[]
+}
+
+class Prestamo <<entity>>
+{
+    - nro: int
+    + getNumero(): int
+    + estaFinalizado(): Boolean
+}
+
+class Cuota <<entity>>
+{
+    - nro: int
+    + getNumero(): int
+}
+
+GestorRegistrarPagoCuota ..|> ISujeto
+InterfazCorreo ..|> IObservadorPagoCuota
+InterfazSMS ..|> IObservadorPagoCuota
+
+ISujeto --> "0..*" IObservadorPagoCuota : observadores
+GestorRegistrarPagoCuota ..> InterfazCorreo : <<create>>
+GestorRegistrarPagoCuota ..> InterfazSMS : <<create>>
+GestorRegistrarPagoCuota ..> Cliente
+GestorRegistrarPagoCuota ..> Prestamo
+GestorRegistrarPagoCuota ..> Cuota
+
+Cliente --> "0..*" Prestamo : prestamo
+Prestamo --> "1..*" Cuota : cuota
+
+note right of IObservadorPagoCuota
+  actualizar() es el método polimórfico.
+  Implementación PUSH: el sujeto envía por
+  parámetro todos los datos de la notificación.
+end note
+
+note bottom of GestorRegistrarPagoCuota
+  Sujeto concreto: implementa ISujeto.
+  Los observadores se crean según la
+  forma de notificación activa del cliente.
+end note
+
+@enduml
